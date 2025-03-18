@@ -52,14 +52,27 @@ app.get("/orders", (req, res) => {
   res.json(orders);
 });
 
+app.get("/orders/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const order = orders.find((order) => order.id === id);
+
+  if (!order) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  res.json(order);
+});
+
 app.post("/orders", (req, res) => {
   const { date, products, price, status } = req.body;
   if (!date || products == null || !price || !status) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
+  const randomId = Math.floor(Math.random() * 900000) + 100000;
+
   const newOrder = {
-    id: orders.length + 1,
+    id: randomId,
     order: `ORD00${orders.length + 1}`,
     date,
     products,
@@ -69,6 +82,26 @@ app.post("/orders", (req, res) => {
 
   orders.push(newOrder);
   res.status(201).json(newOrder);
+});
+
+app.put("/orders/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { date, products, price, status } = req.body;
+  const orderIndex = orders.findIndex((order) => order.id === id);
+
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+
+  orders[orderIndex] = {
+    ...orders[orderIndex],
+    date,
+    products,
+    price,
+    status,
+  };
+
+  res.json(orders[orderIndex]);
 });
 
 app.delete("/orders/:id", (req, res) => {
